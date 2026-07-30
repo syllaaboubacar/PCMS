@@ -1,0 +1,1508 @@
+Parfait. 🚀
+
+Nous allons maintenant construire le véritable schéma de la base de données.
+
+À partir de maintenant, ce que nous concevons pourra être utilisé tel quel pour :
+
+PostgreSQL ;
+Spring Boot (JPA/Hibernate) ;
+Flyway ;
+Angular ;
+les API REST.
+
+C'est l'un des chapitres les plus importants de tout le projet.
+
+MODULE 2 – Conception de la base de données
+Chapitre 5 – Schéma relationnel détaillé (ERD)
+
+Objectif : concevoir le schéma relationnel complet de la base de données PCMS.
+
+1. Qu'est-ce qu'un ERD ?
+
+ERD signifie :
+
+Entity Relationship Diagram
+
+Il représente :
+
+les tables ;
+leurs colonnes ;
+les clés primaires (PK) ;
+les clés étrangères (FK) ;
+les relations.
+
+Contrairement au MCD, il est directement exploitable pour créer la base PostgreSQL.
+
+2. Vue d'ensemble de la base
+
+Notre MVP contient les tables suivantes :
+
+roles
+
+departments
+
+users
+
+cases
+
+case_assignments
+
+suspects
+
+attachments
+
+case_comments
+
+audit_logs
+3. Table roles
+roles
+-------------------------------------------------
+
+PK  id
+
+name
+
+description
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+Contraintes
+PK(id)
+
+UNIQUE(name)
+
+Pourquoi ?
+
+Deux rôles ne doivent jamais porter le même nom.
+
+4. Table departments
+departments
+-------------------------------------------------
+
+PK id
+
+code
+
+name
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+Contraintes
+PK(id)
+
+UNIQUE(code)
+
+UNIQUE(name)
+
+Exemple :
+
+CYBER
+
+TRAFFIC
+
+HOMICIDE
+5. Table users
+users
+-------------------------------------------------
+
+PK id
+
+first_name
+
+last_name
+
+email
+
+password
+
+enabled
+
+FK role_id
+
+FK department_id
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+Contraintes
+PK(id)
+
+UNIQUE(email)
+
+FK(role_id)
+
+FK(department_id)
+6. Table cases
+
+Nous allons maintenant enrichir notre modèle.
+
+cases
+-------------------------------------------------
+
+PK id
+
+case_number
+
+title
+
+description
+
+status
+
+priority
+
+opened_at
+
+closed_at
+
+incident_date
+
+location
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+Pourquoi ces nouveaux champs ?
+case_number
+
+Visible dans l'application.
+
+Exemple :
+
+PCMS-2026-000001
+opened_at
+
+Date officielle d'ouverture.
+
+closed_at
+
+Date de clôture.
+
+incident_date
+
+Date réelle des faits.
+
+Elle est différente de :
+
+opened_at
+
+Une plainte peut être déposée plusieurs jours après les faits.
+
+location
+
+Lieu principal.
+
+Exemple :
+
+Luxembourg City
+
+Findel
+
+Esch-sur-Alzette
+Contraintes
+PK(id)
+
+UNIQUE(case_number)
+7. Table case_assignments
+case_assignments
+-------------------------------------------------
+
+PK id
+
+FK case_id
+
+FK user_id
+
+assigned_at
+
+active
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+Contrainte importante
+
+Un utilisateur ne peut être affecté qu'une seule fois au même dossier.
+
+Nous ajoutons donc :
+
+UNIQUE(case_id, user_id)
+
+Très utilisé en entreprise.
+
+8. Table suspects
+suspects
+-------------------------------------------------
+
+PK id
+
+FK case_id
+
+first_name
+
+last_name
+
+birth_date
+
+nationality
+
+notes
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+
+Pourquoi ajouter :
+
+nationality
+
+notes
+
+Parce qu'elles sont souvent utiles dans une enquête.
+
+9. Table attachments
+attachments
+-------------------------------------------------
+
+PK id
+
+FK case_id
+
+filename
+
+original_filename
+
+mime_type
+
+file_size
+
+storage_path
+
+type
+
+uploaded_at
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+
+Pourquoi ces champs ?
+
+Champ	Utilité
+filename	Nom interne généré
+original_filename	Nom envoyé par l'utilisateur
+mime_type	Type MIME (application/pdf, image/jpeg, etc.)
+file_size	Taille du fichier
+storage_path	Emplacement physique
+uploaded_at	Date d'import
+
+Cette séparation facilite le stockage et la sécurité.
+
+10. Table case_comments
+case_comments
+-------------------------------------------------
+
+PK id
+
+FK case_id
+
+FK user_id
+
+content
+
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+
+deleted
+11. Table audit_logs
+audit_logs
+-------------------------------------------------
+
+PK id
+
+FK user_id
+
+action
+
+entity_name
+
+entity_id
+
+details
+
+ip_address
+
+created_at
+
+created_by
+
+Pourquoi :
+
+ip_address
+
+Très utile pour :
+
+l'audit ;
+la sécurité ;
+la traçabilité.
+12. Relations finales
+roles (1)
+     │
+     │
+     │
+users (N)
+     │
+     │
+departments (1)
+
+
+
+users (1)
+     │
+     │
+case_assignments (N)
+     │
+     │
+cases (1)
+
+
+
+cases (1)
+     │
+     ├────────────── suspects (N)
+     │
+     ├────────────── attachments (N)
+     │
+     └────────────── case_comments (N)
+
+
+
+users (1)
+     │
+     ├────────── case_comments (N)
+     │
+     └────────── audit_logs (N)
+13. Diagramme ERD (Mermaid)
+
+Voici un diagramme compatible avec GitHub.
+
+```mermaid
+erDiagram
+
+    ROLES ||--o{ USERS : has
+    DEPARTMENTS ||--o{ USERS : contains
+
+    USERS ||--o{ CASE_ASSIGNMENTS : assigned
+    CASES ||--o{ CASE_ASSIGNMENTS : contains
+
+    CASES ||--o{ SUSPECTS : contains
+
+    CASES ||--o{ ATTACHMENTS : contains
+
+    CASES ||--o{ CASE_COMMENTS : contains
+
+    USERS ||--o{ CASE_COMMENTS : writes
+
+    USERS ||--o{ AUDIT_LOGS : generates
+```
+14. Vérification du schéma
+
+Contrôlons notre modèle.
+
+Vérification	Résultat
+Toutes les tables possèdent une PK	✅
+Toutes les relations sont représentées	✅
+Toutes les FK sont définies	✅
+Les doublons sont évités	✅
+Les données sont traçables	✅
+Le modèle est compatible JPA	✅
+15. Correspondance avec Spring Boot
+
+Chaque table deviendra une entité.
+
+Exemple :
+
+Table	Classe Java
+users	User
+roles	Role
+departments	Department
+cases	Case
+attachments	Attachment
+
+Puis :
+
+@Table(name = "users")
+Questions d'entretien
+Pourquoi avoir créé case_number alors qu'il existe déjà id ?
+
+Réponse :
+
+id est une clé primaire technique utilisée par la base de données et JPA. case_number est un identifiant métier lisible par les utilisateurs, stable et adapté aux échanges avec les services de police.
+
+Pourquoi utiliser une contrainte UNIQUE(case_id, user_id) ?
+
+Réponse :
+
+Pour empêcher qu'un même utilisateur soit affecté plusieurs fois au même dossier, tout en autorisant plusieurs utilisateurs sur un même dossier.
+
+Pourquoi stocker le mime_type et file_size ?
+
+Réponse :
+
+Ces informations permettent de valider les fichiers, d'afficher leurs caractéristiques dans l'interface et de renforcer la sécurité en contrôlant les types autorisés.
+
+📄 Documentation GitHub
+
+Créer le fichier :
+
+docs/database/04-Entity-Relationship-Diagram.md
+
+Contenu :
+
+# Entity Relationship Diagram (ERD)
+
+## Purpose
+
+This document defines the relational database schema of the Police Case Management System (PCMS).
+
+## Main Tables
+
+- roles
+- departments
+- users
+- cases
+- case_assignments
+- suspects
+- attachments
+- case_comments
+- audit_logs
+
+## Main Constraints
+
+### Primary Keys
+
+Each table has a technical primary key named `id`.
+
+### Foreign Keys
+
+- users.role_id → roles.id
+- users.department_id → departments.id
+- case_assignments.case_id → cases.id
+- case_assignments.user_id → users.id
+- suspects.case_id → cases.id
+- attachments.case_id → cases.id
+- case_comments.case_id → cases.id
+- case_comments.user_id → users.id
+- audit_logs.user_id → users.id
+
+### Unique Constraints
+
+- roles.name
+- departments.code
+- departments.name
+- users.email
+- cases.case_number
+- case_assignments(case_id, user_id)
+
+## Design Goals
+
+- Referential integrity
+- Scalability
+- Traceability
+- JPA compatibility
+- Flyway readiness
+🎯 Avant de continuer : une amélioration d'architecte
+
+À ce stade, le schéma est déjà solide. Cependant, dans une application d'entreprise, il reste un sujet essentiel que nous n'avons pas encore traité : les types de données PostgreSQL.
+
+Par exemple :
+
+title → VARCHAR(255) ou TEXT ?
+status → VARCHAR, ENUM PostgreSQL ou table de référence ?
+file_size → INTEGER ou BIGINT ?
+created_at → TIMESTAMP ou TIMESTAMP WITH TIME ZONE ?
+
+Ces choix ont un impact sur les performances, la maintenance et la compatibilité avec JPA/Hibernate.
+
+Je te propose donc que 
+le prochain chapitre soit consacré au choix des types SQL, des contraintes (NOT NULL, CHECK, DEFAULT) et des index, avant de 
+générer les scripts PostgreSQL et les migrations Flyway. C'est une étape qui manque souvent dans les projets juniors mais qui est très appréciée dans un contexte professionnel.
+
+Au suivant !
+
+Excellent. 🚀
+
+Nous arrivons à une étape que beaucoup de développeurs débutants négligent.
+
+Ils écrivent :
+
+title VARCHAR(255)
+
+sans réellement savoir pourquoi.
+
+Or, un Analyste-Développeur doit être capable de justifier chacun de ses choix.
+
+Dans un entretien à la Police Grand-Ducale, une question comme :
+
+"Pourquoi avez-vous choisi BIGINT plutôt que INTEGER ?"
+
+est tout à fait possible.
+
+Aujourd'hui, nous allons être capables d'y répondre.
+
+MODULE 2 – Conception de la base de données
+Chapitre 6 – Types SQL, contraintes et index PostgreSQL
+
+Objectif : choisir les bons types PostgreSQL, définir les contraintes d'intégrité et préparer les index qui garantiront les performances de l'application.
+
+1. Pourquoi choisir correctement les types SQL ?
+
+Le type d'une colonne influence :
+
+les performances ;
+l'espace disque ;
+la validation des données ;
+la compatibilité avec JPA/Hibernate ;
+la facilité d'évolution.
+
+Un mauvais choix aujourd'hui peut devenir un problème dans plusieurs années.
+
+2. Les types que nous utiliserons
+
+Nous allons volontairement limiter le nombre de types.
+
+PostgreSQL	Utilisation
+BIGINT	Clés primaires
+VARCHAR	Texte court
+TEXT	Texte long
+BOOLEAN	Oui / Non
+TIMESTAMP WITH TIME ZONE	Dates et heures
+DATE	Date seule
+BIGINT	Taille de fichier
+UUID (optionnel)	Évolutions futures
+3. Pourquoi BIGINT pour les identifiants ?
+
+Beaucoup de tutoriels utilisent :
+
+INTEGER
+
+Nous utiliserons :
+
+BIGINT
+
+Pourquoi ?
+
+Parce qu'il offre une très grande capacité et évite un changement de type si l'application grandit.
+
+En pratique, avec Spring Boot :
+
+Long id;
+
+correspond naturellement à :
+
+BIGINT
+4. Pourquoi VARCHAR ?
+
+Exemple :
+
+title VARCHAR(255)
+
+Pourquoi pas TEXT ?
+
+Parce que :
+
+la longueur est connue ;
+l'indexation est plus simple ;
+cela exprime une intention claire.
+
+Nous utiliserons généralement :
+
+Champ	Taille
+title	255
+first_name	100
+last_name	100
+email	255
+role_name	50
+5. Quand utiliser TEXT ?
+
+Pour les contenus sans limite pratique.
+
+Exemple :
+
+description TEXT
+
+ou
+
+content TEXT
+
+Très adapté pour :
+
+descriptions ;
+commentaires ;
+journaux détaillés.
+6. Pourquoi BOOLEAN ?
+
+Exemple :
+
+enabled BOOLEAN
+
+ou
+
+deleted BOOLEAN
+
+Valeurs possibles :
+
+TRUE
+
+FALSE
+
+C'est plus lisible qu'un entier (0/1) et parfaitement pris en charge par PostgreSQL et JPA.
+
+7. Pourquoi TIMESTAMP WITH TIME ZONE ?
+
+Dans une application moderne, les utilisateurs peuvent être répartis sur plusieurs fuseaux horaires.
+
+Nous préférons donc :
+
+TIMESTAMP WITH TIME ZONE
+
+plutôt que :
+
+TIMESTAMP
+
+Dans Spring Boot :
+
+OffsetDateTime
+
+ou
+
+Instant
+
+sont d'excellents choix.
+
+Pour le PCMS, je recommande Instant pour les dates techniques (createdAt, updatedAt) et LocalDate pour les dates métier (incidentDate, birthDate).
+
+8. Pourquoi DATE ?
+
+Certaines informations n'ont pas besoin d'heure.
+
+Exemple :
+
+birth_date DATE
+
+ou
+
+incident_date DATE
+9. Les contraintes NOT NULL
+
+Une contrainte indique qu'une valeur est obligatoire.
+
+Exemple :
+
+title VARCHAR(255) NOT NULL
+
+Nous allons définir :
+
+Champ	NOT NULL
+title	Oui
+status	Oui
+priority	Oui
+email	Oui
+password	Oui
+role_id	Oui
+department_id	Oui
+10. Les contraintes UNIQUE
+
+Certaines valeurs doivent être uniques.
+
+Exemple :
+
+email
+
+Deux utilisateurs ne peuvent pas partager la même adresse.
+
+Nous définirons :
+
+UNIQUE(email)
+
+UNIQUE(case_number)
+
+UNIQUE(role.name)
+
+UNIQUE(department.code)
+11. Les contraintes CHECK
+
+Les contraintes CHECK empêchent des valeurs incohérentes.
+
+Exemple :
+
+CHECK(file_size >= 0)
+
+Autres exemples :
+
+CHECK(priority IN ('LOW','MEDIUM','HIGH','CRITICAL'))
+
+ou
+
+CHECK(status IN
+('OPEN',
+ 'IN_PROGRESS',
+ 'ON_HOLD',
+ 'CLOSED',
+ 'ARCHIVED'))
+
+Remarque : dans le backend, nous utiliserons aussi des Enums Java. Le CHECK PostgreSQL ajoute une protection supplémentaire directement au niveau de la base.
+
+12. Les valeurs par défaut (DEFAULT)
+
+Très utiles.
+
+Exemple :
+
+deleted BOOLEAN DEFAULT FALSE
+
+Autre exemple :
+
+enabled BOOLEAN DEFAULT TRUE
+
+ou
+
+created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+13. Les index
+
+Pourquoi créer un index ?
+
+Parce qu'une recherche dans :
+
+10 dossiers
+
+n'a rien à voir avec une recherche dans :
+
+5 000 000 dossiers
+
+L'index accélère les recherches.
+
+14. Les index du PCMS
+users.email
+
+Très recherché lors de l'authentification.
+
+CREATE UNIQUE INDEX idx_users_email
+ON users(email);
+cases.case_number
+
+Recherche fréquente.
+
+CREATE UNIQUE INDEX idx_cases_number
+ON cases(case_number);
+cases.status
+
+Très utilisé dans les filtres.
+
+CREATE INDEX idx_cases_status
+ON cases(status);
+case_assignments.case_id
+
+Très utilisé.
+
+CREATE INDEX idx_case_assignments_case
+ON case_assignments(case_id);
+case_comments.case_id
+
+Très fréquent.
+
+CREATE INDEX idx_case_comments_case
+ON case_comments(case_id);
+15. Les index à éviter
+
+Il ne faut pas indexer toutes les colonnes.
+
+Pourquoi ?
+
+Parce que chaque index :
+
+occupe de l'espace ;
+ralentit les opérations d'insertion et de mise à jour.
+
+Nous indexons uniquement les colonnes :
+
+souvent recherchées ;
+souvent utilisées dans les jointures ;
+utilisées pour le tri.
+16. Les clés étrangères
+
+Toutes les relations importantes auront une contrainte de clé étrangère.
+
+Exemple :
+
+users.role_id
+→ roles.id
+
+Ainsi, PostgreSQL empêchera de créer un utilisateur avec un rôle inexistant.
+
+17. Les actions sur les clés étrangères
+
+Nous choisirons soigneusement le comportement.
+
+Exemple :
+
+ON DELETE RESTRICT
+
+Pourquoi ?
+
+Parce qu'il ne faut pas supprimer un rôle utilisé par des utilisateurs.
+
+Autres exemples :
+
+Action	Utilisation
+RESTRICT	Empêche la suppression si des références existent
+CASCADE	Supprime automatiquement les enfants
+SET NULL	Met la FK à NULL
+
+Pour le PCMS, nous privilégierons RESTRICT, afin d'éviter toute suppression accidentelle.
+
+18. Tableau récapitulatif
+Élément	Choix
+PK	BIGINT
+Texte court	VARCHAR
+Texte long	TEXT
+Date métier	DATE
+Date technique	TIMESTAMP WITH TIME ZONE
+Booléen	BOOLEAN
+Suppression	Soft Delete
+Index	Colonnes fréquemment recherchées
+FK	RESTRICT
+Questions d'entretien
+Pourquoi utiliser BIGINT plutôt que INTEGER ?
+
+Réponse :
+
+Pour disposer d'une capacité largement suffisante et rester cohérent avec Long utilisé dans les entités JPA.
+
+Pourquoi utiliser TEXT pour les commentaires ?
+
+Réponse :
+
+Parce que leur longueur n'est pas connue à l'avance. TEXT évite une limite artificielle.
+
+Pourquoi ne pas indexer toutes les colonnes ?
+
+Réponse :
+
+Chaque index améliore les lectures mais augmente le coût des écritures. Il faut donc indexer uniquement les colonnes utilisées dans les recherches, les jointures ou les tris.
+
+Pourquoi utiliser TIMESTAMP WITH TIME ZONE ?
+
+Réponse :
+
+Pour enregistrer des dates fiables indépendamment du fuseau horaire et faciliter les traitements distribués.
+
+📄 Documentation GitHub
+
+Créer le fichier :
+
+docs/database/05-PostgreSQL-Types-Constraints-Indexes.md
+
+Puis ajouter :
+
+# PostgreSQL Types, Constraints and Indexes
+
+## Purpose
+
+This document defines the SQL types, constraints and indexing strategy used in the Police Case Management System (PCMS).
+
+## SQL Types
+
+| Type | Usage |
+|------|-------|
+| BIGINT | Primary keys |
+| VARCHAR | Short text |
+| TEXT | Long text |
+| BOOLEAN | Flags |
+| DATE | Business dates |
+| TIMESTAMP WITH TIME ZONE | Audit timestamps |
+
+## Constraints
+
+### NOT NULL
+
+Mandatory business fields.
+
+### UNIQUE
+
+- users.email
+- roles.name
+- departments.code
+- cases.case_number
+
+### CHECK
+
+- file_size >= 0
+- valid status values
+- valid priority values
+
+## Default Values
+
+- deleted = FALSE
+- enabled = TRUE
+- created_at = CURRENT_TIMESTAMP
+
+## Indexes
+
+- idx_users_email
+- idx_cases_number
+- idx_cases_status
+- idx_case_assignments_case
+- idx_case_comments_case
+
+## Foreign Keys
+
+The schema uses foreign keys with `ON DELETE RESTRICT` to preserve referential integrity.
+🎯 Nous arrivons au cœur de la mise en œuvre
+
+Le modèle de données est maintenant suffisamment mature pour passer à la génération de la base.
+
+La prochaine étape sera l'écriture du schéma PostgreSQL complet :
+
+création des tables (CREATE TABLE) ;
+contraintes (PRIMARY KEY, FOREIGN KEY, CHECK, UNIQUE) ;
+index ;
+commentaires SQL ;
+ordre de création des objets.
+
+Ce schéma sera directement réutilisable dans Flyway, puis servira de base aux entités Spring Boot/JPA. C'est la première fois que nous allons produire un artefact exécutable et prêt pour le développement.
+
+Parfait, au suivant !
+
+Excellent. 🚀
+
+Nous arrivons à une étape charnière du projet.
+
+Jusqu'à présent, nous avons conçu la base de données sur le papier :
+
+✅ MCD
+✅ MLD
+✅ ERD
+✅ Types SQL
+✅ Contraintes
+✅ Index
+
+À partir de maintenant, nous allons produire un véritable schéma PostgreSQL professionnel, exactement comme le ferait une équipe de développement avant le début du codage.
+
+Ce script SQL sera ensuite repris par Flyway sans pratiquement aucune modification.
+
+MODULE 2 – Conception de la base de données
+Chapitre 7 – Schéma PostgreSQL complet
+
+Objectif : produire un schéma SQL professionnel, propre, maintenable et directement compatible avec Spring Boot, Hibernate et Flyway.
+
+1. Notre philosophie
+
+Nous allons respecter plusieurs règles.
+
+Règle 1
+
+Créer les tables dans le bon ordre.
+
+Pourquoi ?
+
+Parce que PostgreSQL ne peut pas créer une clé étrangère vers une table qui n'existe pas encore.
+
+Notre ordre sera :
+
+roles
+↓
+departments
+↓
+users
+↓
+cases
+↓
+case_assignments
+↓
+suspects
+↓
+attachments
+↓
+case_comments
+↓
+audit_logs
+2. Création de la table roles
+CREATE TABLE roles (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    name VARCHAR(50) NOT NULL,
+
+    description VARCHAR(255),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uk_roles_name UNIQUE(name)
+
+);
+
+Pourquoi :
+
+GENERATED ALWAYS AS IDENTITY
+
+Parce que c'est la méthode moderne recommandée par PostgreSQL.
+
+Nous n'utiliserons pas SERIAL.
+
+3. Table departments
+CREATE TABLE departments (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    code VARCHAR(20) NOT NULL,
+
+    name VARCHAR(100) NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uk_departments_code UNIQUE(code),
+    CONSTRAINT uk_departments_name UNIQUE(name)
+
+);
+4. Table users
+CREATE TABLE users (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    first_name VARCHAR(100) NOT NULL,
+
+    last_name VARCHAR(100) NOT NULL,
+
+    email VARCHAR(255) NOT NULL,
+
+    password VARCHAR(255) NOT NULL,
+
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+
+    role_id BIGINT NOT NULL,
+
+    department_id BIGINT NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uk_users_email UNIQUE(email),
+
+    CONSTRAINT fk_users_role
+        FOREIGN KEY(role_id)
+        REFERENCES roles(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_users_department
+        FOREIGN KEY(department_id)
+        REFERENCES departments(id)
+        ON DELETE RESTRICT
+
+);
+5. Table cases
+CREATE TABLE cases (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    case_number VARCHAR(30) NOT NULL,
+
+    title VARCHAR(255) NOT NULL,
+
+    description TEXT NOT NULL,
+
+    status VARCHAR(30) NOT NULL,
+
+    priority VARCHAR(20) NOT NULL,
+
+    opened_at TIMESTAMPTZ NOT NULL,
+
+    closed_at TIMESTAMPTZ,
+
+    incident_date DATE,
+
+    location VARCHAR(255),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uk_cases_number UNIQUE(case_number),
+
+    CONSTRAINT chk_case_status
+        CHECK (
+            status IN (
+                'OPEN',
+                'IN_PROGRESS',
+                'ON_HOLD',
+                'CLOSED',
+                'ARCHIVED'
+            )
+        ),
+
+    CONSTRAINT chk_case_priority
+        CHECK (
+            priority IN (
+                'LOW',
+                'MEDIUM',
+                'HIGH',
+                'CRITICAL'
+            )
+        )
+
+);
+6. Table case_assignments
+CREATE TABLE case_assignments (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    case_id BIGINT NOT NULL,
+
+    user_id BIGINT NOT NULL,
+
+    assigned_at TIMESTAMPTZ NOT NULL,
+
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uk_assignment
+        UNIQUE(case_id, user_id),
+
+    CONSTRAINT fk_assignment_case
+        FOREIGN KEY(case_id)
+        REFERENCES cases(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_assignment_user
+        FOREIGN KEY(user_id)
+        REFERENCES users(id)
+        ON DELETE RESTRICT
+
+);
+7. Table suspects
+CREATE TABLE suspects (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    case_id BIGINT NOT NULL,
+
+    first_name VARCHAR(100) NOT NULL,
+
+    last_name VARCHAR(100) NOT NULL,
+
+    birth_date DATE,
+
+    nationality VARCHAR(100),
+
+    notes TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_suspects_case
+        FOREIGN KEY(case_id)
+        REFERENCES cases(id)
+        ON DELETE RESTRICT
+
+);
+8. Table attachments
+CREATE TABLE attachments (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    case_id BIGINT NOT NULL,
+
+    filename VARCHAR(255) NOT NULL,
+
+    original_filename VARCHAR(255) NOT NULL,
+
+    mime_type VARCHAR(100) NOT NULL,
+
+    file_size BIGINT NOT NULL,
+
+    storage_path VARCHAR(500) NOT NULL,
+
+    type VARCHAR(30) NOT NULL,
+
+    uploaded_at TIMESTAMPTZ NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT chk_file_size
+        CHECK(file_size >= 0),
+
+    CONSTRAINT fk_attachment_case
+        FOREIGN KEY(case_id)
+        REFERENCES cases(id)
+        ON DELETE RESTRICT
+
+);
+9. Table case_comments
+CREATE TABLE case_comments (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    case_id BIGINT NOT NULL,
+
+    user_id BIGINT NOT NULL,
+
+    content TEXT NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+
+    updated_at TIMESTAMPTZ,
+    updated_by VARCHAR(100),
+
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_comment_case
+        FOREIGN KEY(case_id)
+        REFERENCES cases(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_comment_user
+        FOREIGN KEY(user_id)
+        REFERENCES users(id)
+        ON DELETE RESTRICT
+
+);
+10. Table audit_logs
+CREATE TABLE audit_logs (
+
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    user_id BIGINT NOT NULL,
+
+    action VARCHAR(100) NOT NULL,
+
+    entity_name VARCHAR(100) NOT NULL,
+
+    entity_id BIGINT NOT NULL,
+
+    details TEXT,
+
+    ip_address VARCHAR(45),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    created_by VARCHAR(100),
+
+    CONSTRAINT fk_audit_user
+        FOREIGN KEY(user_id)
+        REFERENCES users(id)
+        ON DELETE RESTRICT
+
+);
+11. Création des index
+
+Après les tables, nous créons les index.
+
+CREATE UNIQUE INDEX idx_users_email
+ON users(email);
+
+CREATE UNIQUE INDEX idx_cases_number
+ON cases(case_number);
+
+CREATE INDEX idx_cases_status
+ON cases(status);
+
+CREATE INDEX idx_cases_priority
+ON cases(priority);
+
+CREATE INDEX idx_case_assignments_case
+ON case_assignments(case_id);
+
+CREATE INDEX idx_case_assignments_user
+ON case_assignments(user_id);
+
+CREATE INDEX idx_comments_case
+ON case_comments(case_id);
+
+CREATE INDEX idx_attachments_case
+ON attachments(case_id);
+
+CREATE INDEX idx_audit_user
+ON audit_logs(user_id);
+12. Pourquoi créer les index à la fin ?
+
+Parce que :
+
+les tables existent déjà ;
+la création est plus rapide ;
+Flyway exécutera les scripts dans un ordre logique.
+13. Ce que nous n'avons volontairement pas ajouté
+
+Afin de garder le MVP simple, nous n'avons pas encore modélisé :
+
+victims
+witnesses
+vehicles
+weapons
+evidence
+addresses
+organizations
+
+Notre architecture permet de les ajouter sans remettre en cause le modèle existant.
+
+14. Vérification finale
+
+Notre schéma répond aux exigences du poste :
+
+Exigence	Couverture
+PostgreSQL	✅
+SQL	✅
+Architecture modulaire	✅
+Maintenance	✅
+Documentation	✅
+Audit	✅
+Sécurité	✅
+Extensibilité	✅
+Questions d'entretien
+Pourquoi utiliser GENERATED ALWAYS AS IDENTITY plutôt que SERIAL ?
+
+Réponse :
+
+Parce qu'il s'agit de la méthode moderne recommandée par PostgreSQL. Elle est conforme au standard SQL et s'intègre mieux avec les outils récents.
+
+Pourquoi choisir ON DELETE RESTRICT ?
+
+Réponse :
+
+Pour préserver l'intégrité des données. Dans une application de gestion d'enquêtes, il ne doit pas être possible de supprimer un rôle, un utilisateur ou un dossier encore référencé.
+
+Pourquoi créer les index après les tables ?
+
+Réponse :
+
+Les index dépendent des tables. Les créer à la fin rend le script plus lisible et facilite son exécution par Flyway.
+
+📄 Documentation GitHub
+
+Créer le fichier :
+
+docs/database/06-PostgreSQL-Schema.md
+
+Puis ajouter une présentation du schéma comprenant :
+
+la liste des tables ;
+les conventions de nommage ;
+les contraintes principales ;
+la stratégie des clés étrangères ;
+la liste des index ;
+les choix de conception (IDENTITY, TIMESTAMPTZ, ON DELETE RESTRICT).
+
+Le code SQL complet sera stocké dans un fichier dédié, par exemple :
+
+backend/
+└── src/
+    └── main/
+        └── resources/
+            └── db/
+                └── migration/
+                    └── V1__Initial_schema.sql
+
+Nous n'y placerons pas le script immédiatement : il sera généré lors du chapitre consacré à Flyway, afin que le dépôt soit organisé comme un véritable projet Spring Boot professionnel.
+
+🎯 Ce qui nous attend
+
+Nous avons maintenant terminé la conception logique et physique de la base de données.
+
+Le prochain chapitre sera consacré à Flyway, l'outil de migration de base de données utilisé dans de nombreux projets Spring Boot.
+
+Nous verrons :
+
+pourquoi versionner la base de données comme le code ;
+comment organiser les fichiers V1__, V2__, V3__ ;
+comment intégrer Flyway à Spring Boot ;
+comment préparer un pipeline CI/CD où chaque déploiement met automatiquement la base à jour.
+
+À partir de là, nous entrerons progressivement dans la phase de développement du backend.

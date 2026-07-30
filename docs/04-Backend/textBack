@@ -1,0 +1,716 @@
+Parfait. 🚀
+
+Nous quittons maintenant la phase Conception.
+
+À partir de maintenant, nous entrons dans la phase de développement.
+
+C'est ici que ton projet va réellement prendre vie.
+
+MODULE 3 — Développement du Backend Spring Boot
+
+Objectif du module :
+
+Construire un backend professionnel, modulaire, sécurisé et maintenable, conforme aux bonnes pratiques de Spring Boot 3.x.
+
+À la fin de ce module, nous aurons un backend capable de :
+
+Exposer une API REST complète.
+Communiquer avec PostgreSQL.
+Gérer l'authentification et les autorisations.
+Utiliser Flyway pour les migrations.
+Produire une documentation OpenAPI/Swagger.
+Être conteneurisé avec Docker.
+Être déployé facilement.
+Organisation du Module 3
+
+Voici le parcours complet que nous allons suivre.
+
+Chapitre	Sujet
+1	Création du projet Spring Boot
+2	Architecture des packages
+3	Configuration (application.yml)
+4	Dépendances Maven
+5	Configuration PostgreSQL
+6	Intégration Flyway
+7	JPA et Hibernate
+8	Entités (Entity)
+9	Repositories
+10	DTO
+11	MapStruct
+12	Services
+13	Validation
+14	Gestion des exceptions
+15	Contrôleurs REST
+16	Sécurité (Spring Security + JWT)
+17	Tests
+18	Documentation OpenAPI
+19	Docker
+20	Préparation au déploiement
+
+💡 Contrairement à beaucoup de tutoriels, nous construirons le backend dans le même ordre qu'un projet professionnel, et non "au hasard".
+
+Chapitre 1 — Création du projet Spring Boot
+Objectif
+
+Créer un projet Spring Boot propre, moderne et directement prêt à accueillir le code métier.
+
+À la fin de ce chapitre, nous aurons :
+
+un projet Maven fonctionnel ;
+Java 21 ;
+Spring Boot 3.x ;
+VS Code configuré ;
+un premier démarrage réussi.
+1. Vérifier l'environnement Ubuntu
+
+Avant toute chose, ouvrons un terminal.
+
+Vérifie Java :
+
+java --version
+
+Résultat attendu (ou supérieur dans la même LTS) :
+
+openjdk 21
+
+Puis Maven :
+
+mvn -version
+
+Tu dois obtenir quelque chose comme :
+
+Apache Maven 3.9.x
+Java version: 21
+
+Puis Git :
+
+git --version
+
+Puis Node.js (utile plus tard pour Angular) :
+
+node --version
+2. Structure de travail
+
+Je te conseille de créer un dossier dédié à tous tes projets.
+
+Par exemple :
+
+mkdir -p ~/Development
+cd ~/Development
+
+Puis :
+
+mkdir PCMS
+cd PCMS
+
+Nous aurons ensuite :
+
+PCMS/
+
+qui deviendra le dépôt Git principal.
+
+3. Initialiser Git
+
+Avant même d'écrire une ligne de code :
+
+git init
+
+Puis :
+
+git branch -M main
+
+Pourquoi si tôt ?
+
+Parce qu'un projet professionnel est versionné dès sa création.
+
+4. Créer la structure du dépôt
+
+Créons maintenant les dossiers principaux :
+
+mkdir backend
+mkdir frontend
+mkdir docs
+mkdir diagrams
+mkdir docker
+mkdir scripts
+
+Puis :
+
+touch README.md
+touch .gitignore
+touch LICENSE
+
+L'arborescence devient :
+
+PCMS/
+├── backend/
+├── frontend/
+├── docs/
+├── diagrams/
+├── docker/
+├── scripts/
+├── README.md
+├── LICENSE
+└── .gitignore
+5. Créer le projet Spring Boot
+
+Nous utiliserons Spring Initializr.
+
+Les paramètres retenus pour le projet sont les suivants :
+
+Paramètre	Valeur
+Project	Maven
+Language	Java
+Spring Boot	3.x (version stable la plus récente)
+Java	21
+Group	lu.police
+Artifact	pcms-backend
+Name	pcms-backend
+Package	lu.police.pcms
+Packaging	Jar
+
+Pourquoi lu.police ?
+
+lu : Luxembourg.
+police : domaine fonctionnel.
+pcms : Police Case Management System.
+
+Cela donne un package Java cohérent :
+
+lu.police.pcms
+6. Dépendances initiales
+
+Nous allons volontairement limiter les dépendances au strict nécessaire.
+
+Nous ajouterons les autres au fur et à mesure.
+
+Sélectionne uniquement :
+
+Spring
+Spring Web
+Spring Data JPA
+Validation
+Database
+PostgreSQL Driver
+Flyway Migration
+Development
+Lombok
+
+Nous ajouterons plus tard :
+
+Spring Security
+JWT
+MapStruct
+OpenAPI
+Testcontainers
+Actuator
+Docker Compose
+etc.
+
+Cette approche permet de comprendre chaque brique avant de l'intégrer.
+
+7. Générer et intégrer le projet
+
+Une fois le projet téléchargé :
+
+Décompresse-le.
+
+Tu dois obtenir :
+
+pcms-backend/
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── src/
+└── ...
+
+Déplace ensuite son contenu dans :
+
+PCMS/backend/
+
+Ainsi, ton dépôt Git conservera une séparation claire entre le backend et le frontend.
+
+8. Ouvrir le projet dans VS Code
+
+Depuis le terminal :
+
+cd ~/Development/PCMS
+code .
+
+Tu ouvres le projet complet, et non uniquement le dossier backend.
+
+C'est une excellente pratique, car tu pourras travailler dans un seul espace de travail sur :
+
+le backend ;
+le frontend ;
+la documentation ;
+les diagrammes.
+9. Premier démarrage
+
+Place-toi dans le dossier du backend :
+
+cd backend
+
+Puis :
+
+./mvnw spring-boot:run
+
+Tu devrais voir un message ressemblant à :
+
+Started PcmsBackendApplication
+
+À ce stade, il est normal que certaines fonctionnalités (comme la connexion à PostgreSQL) ne soient pas encore configurées.
+
+10. Premier commit Git
+
+Dès que le projet démarre :
+
+git add .
+git commit -m "Initial Spring Boot project"
+
+Pourquoi maintenant ?
+
+Parce que cela crée un point de restauration propre avant d'ajouter de nouvelles fonctionnalités.
+
+Bonnes pratiques dès le premier jour
+
+✅ Un commit par fonctionnalité.
+
+✅ Des messages de commit explicites.
+
+✅ Ne jamais pousser du code qui ne compile pas.
+
+✅ Garder la branche main toujours fonctionnelle.
+
+Questions d'entretien
+Pourquoi avoir choisi Maven ?
+
+Réponse :
+
+Maven est largement utilisé dans les projets Java d'entreprise. Il offre une gestion standardisée des dépendances, une excellente intégration avec Spring Boot et une structure de projet bien connue des équipes.
+
+Pourquoi ouvrir le projet à la racine PCMS dans VS Code ?
+
+Réponse :
+
+Parce que cela permet de gérer dans un seul espace de travail le backend, le frontend, la documentation, les scripts et les fichiers Docker, ce qui simplifie le développement.
+
+Pourquoi ajouter les dépendances progressivement ?
+
+Réponse :
+
+Pour limiter la complexité initiale, mieux comprendre le rôle de chaque bibliothèque et faciliter le diagnostic des problèmes.
+
+📄 Documentation GitHub
+
+Créer le fichier :
+
+docs/backend/01-Spring-Boot-Project-Setup.md
+
+Y documenter :
+
+les prérequis (Java, Maven, Git, VS Code) ;
+la structure du dépôt ;
+les paramètres Spring Initializr ;
+les dépendances initiales ;
+les commandes de création et de lancement ;
+les bonnes pratiques Git.
+⚠️ Une recommandation importante avant d'aller plus loin
+
+Je te propose une légère amélioration de notre démarche.
+
+Au lieu de générer le projet depuis le site Spring Initializr puis de le déplacer, je te recommande de créer directement le projet dans PCMS/backend. Cela évite des manipulations inutiles et reflète mieux un workflow professionnel.
+
+De plus, comme nous sommes sur Ubuntu + VS Code, nous travaillerons également avec :
+
+un fichier .editorconfig pour harmoniser le formatage du code ;
+un .gitattributes pour assurer des fins de ligne cohérentes entre Linux, macOS et Windows ;
+un .gitignore adapté à Java, Maven, Angular, VS Code et Ubuntu.
+
+Ces fichiers seront mis en place dès le prochain chapitre afin de partir sur des bases solides. Ils sont souvent oubliés dans les tutoriels, mais très appréciés dans les projets professionnels.
+
+Today 4:17 PM
+Avant de passer au chapitre suivant, j'ai quelques précisions et questions à clarifier:
+Dans la plateforme de Spring Initializr, 
+il n'ya pas les versions : version 3.x ! (ex: 3.4.1, 3.3.6, etc.) de Spring.
+Il ya : 4.1.1 (SNAPSHOT),  4.1.0, 4.0.8 (SNAPSHOT), 4.0.7
+
+Les paramètres retenus pour le projet sont les suivants :
+
+Paramètre	Valeur
+Project	Maven
+Language	Java
+Spring Boot	3.x (version stable la plus récente)
+Java	21
+Group	lu.police
+Artifact	pcms-backend
+Name	pcms-backend
+Package	lu.police.pcms
+Packaging	Jar
+
+Mais je ne vois pas certains champs pourquoi?
+Je vois juste ça voir image ci-jointe :
+Voici les installations sur machine:
+sylla@sylla-ThinkPad-X380-Yoga:~/MyProjects/PCMS$ java --version
+openjdk 21.0.11 2026-04-21
+OpenJDK Runtime Environment (build 21.0.11+10-1-22.04.2-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.11+10-1-22.04.2-Ubuntu, mixed mode, sharing)
+sylla@sylla-ThinkPad-X380-Yoga:~/MyProjects/PCMS$ mvn --version
+Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+Maven home: /home/sylla/.sdkman/candidates/maven/current
+Java version: 21.0.11, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
+Default locale: en_US, platform encoding: UTF-8
+OS name: "linux", version: "6.8.0-136-generic", arch: "amd64", family: "unix"
+sylla@sylla-ThinkPad-X380-Yoga:~/MyProjects/PCMS$ git --version
+git version 2.54.0
+sylla@sylla-ThinkPad-X380-Yoga:~/MyProjects/PCMS$ node --version
+v20.20.2
+sylla@sylla-ThinkPad-X380-Yoga:~/MyProjects/PCMS$ 
+
+Sur Spring Initializr tu n'as pas parler de configuration : Properties vs YAML, quelle option choisir ?
+Quelle version de spring choisir ?
+Comment peut on parametrer tout ça dans Spring Initializr ?
+
+Comment puis-je le le projet PCMS à mon compte github sachant que tous ces repertoires ci-dessous sont déjà créés localement:
+PCMS/
+├── backend/
+├── frontend/
+├── docs/
+├── diagrams/
+├── docker/
+├── scripts/
+├── README.md
+├── LICENSE
+└── .gitignore
+
+Excellentes questions. 👍
+Tu fais exactement ce qu'un bon analyste-développeur doit faire : ne pas suivre un tutoriel aveuglément, mais comprendre les choix techniques.
+
+Je vais répondre point par point.
+
+1. Pourquoi je ne vois pas Spring Boot 3.x ?
+
+Ta capture est parfaitement normale.
+
+Depuis la sortie de Spring Boot 4.0, Spring Initializr propose par défaut les versions les plus récentes.
+
+Tu vois actuellement :
+
+✅ 4.1.0 (stable)
+4.1.1-SNAPSHOT
+4.0.7
+4.0.8-SNAPSHOT
+
+Donc il ne propose plus automatiquement la branche 3.x.
+
+Pourquoi je t'avais conseillé Spring Boot 3.x ?
+
+Parce qu'à l'époque de la préparation du plan :
+
+Spring Boot 3 était la version LTS utilisée dans énormément d'entreprises.
+La Police Grand-Ducale indique seulement :
+
+Java + Spring Boot
+
+Elle ne précise pas la version.
+
+Aujourd'hui, en juillet 2026, Spring Boot 4.1 est la version stable.
+
+Je te recommande donc de partir sur :
+
+Spring Boot 4.1.0
+
+C'est même un argument positif en entretien :
+
+"J'ai choisi la version stable la plus récente."
+
+2. Quelle version choisir ?
+
+👉 Je recommande :
+
+Élément	Choix
+Java	21
+Spring Boot	4.1.0
+
+Pourquoi ?
+
+Parce que :
+
+Java 21 est LTS.
+Spring Boot 4 est compatible.
+Tu développes un nouveau projet.
+Aucun besoin de rester sur une ancienne version.
+3. Pourquoi je ne vois pas les champs "Name", "Description", etc. ?
+
+Bonne remarque.
+
+La nouvelle interface de Spring Initializr est plus compacte.
+
+Quand tu renseignes :
+
+Group:
+lu.police
+
+et
+
+Artifact:
+pcms-backend
+
+Spring génère automatiquement :
+
+Name = pcms-backend
+
+et
+
+Package =
+
+lu.police.pcms
+
+Tu peux d'ailleurs voir le champ :
+
+Package name
+
+lu.police.pcms
+
+sur ta capture.
+
+Donc rien d'anormal.
+
+4. Properties ou YAML ?
+
+Très bonne question.
+
+Tu remarques ici :
+
+Configuration
+
+○ YAML
+
+● Properties
+Les deux fonctionnent.
+
+Spring Boot comprend parfaitement :
+
+application.properties
+
+ou
+
+application.yml
+Pourquoi je préfère YAML ?
+
+Parce qu'il est beaucoup plus lisible.
+
+Exemple.
+
+Properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/pcms
+spring.datasource.username=postgres
+spring.datasource.password=password
+spring.jpa.hibernate.ddl-auto=validate
+spring.flyway.enabled=true
+YAML
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pcms
+    username: postgres
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+Le YAML est :
+
+plus clair ;
+mieux structuré ;
+plus facile à maintenir.
+Mon conseil
+
+Choisis
+
+✅ YAML
+
+Nous écrirons toujours :
+
+application.yml
+5. Les dépendances à sélectionner
+
+Je te conseille de sélectionner uniquement celles-ci.
+
+Spring
+
+✅ Spring Web
+
+✅ Spring Data JPA
+
+✅ Validation
+
+SQL
+
+✅ PostgreSQL Driver
+
+✅ Flyway Migration
+
+Developer Tools
+
+✅ Lombok
+
+Pas encore :
+
+❌ Security
+
+❌ OAuth
+
+❌ Docker Compose
+
+❌ Testcontainers
+
+❌ DevTools
+
+❌ Actuator
+
+❌ OpenAPI
+
+Pourquoi ?
+
+Parce que nous allons les ajouter progressivement afin de comprendre leur rôle.
+
+6. Ton environnement
+
+Je l'ai vérifié.
+
+Tout est excellent.
+
+Logiciel	Version	État
+Java	21.0.11	✅
+Maven	3.9.16	✅
+Git	2.54	✅
+Node	20.20.2	✅
+
+Franchement…
+
+Tu pars sur un environnement très propre.
+
+7. Comment rattacher PCMS à GitHub ?
+
+C'est exactement ce que nous allons faire.
+
+Supposons que ton projet est ici :
+
+~/MyProjects/PCMS
+
+Tu as déjà :
+
+backend/
+frontend/
+docs/
+...
+
+C'est parfait.
+
+Étape 1
+
+Initialiser Git si ce n'est pas déjà fait.
+
+git init
+Étape 2
+
+Créer le dépôt sur GitHub.
+
+Sur GitHub :
+
+New Repository
+
+Nom :
+
+PCMS
+
+Ne coche PAS :
+
+README
+.gitignore
+LICENSE
+
+Puis :
+
+Create Repository
+
+GitHub te donnera quelque chose comme :
+
+https://github.com/<ton-utilisateur>/PCMS.git
+
+ou
+
+git@github.com:<ton-utilisateur>/PCMS.git
+Étape 3
+
+Associer le dépôt local.
+
+HTTPS :
+
+git remote add origin https://github.com/<utilisateur>/PCMS.git
+
+ou SSH :
+
+git remote add origin git@github.com:<utilisateur>/PCMS.git
+
+Vérifie :
+
+git remote -v
+
+Tu dois voir :
+
+origin
+Étape 4
+
+Premier commit.
+
+git add .
+
+Puis :
+
+git commit -m "Initial project structure"
+Étape 5
+
+Envoyer vers GitHub.
+
+git push -u origin main
+
+Et ton dépôt sera synchronisé.
+
+8. Ce que je te recommande pour notre projet
+
+Je te propose que nous adoptions les versions suivantes :
+
+Élément	Version
+Ubuntu	24.04 LTS
+VS Code	Dernière version stable
+Java	21 LTS
+Maven	3.9.x
+Spring Boot	4.1.0
+PostgreSQL	17
+Angular	20
+Node.js	20 LTS
+Flyway	version gérée par Spring Boot
+Git	Dernière version stable
+
+Ainsi, le projet sera moderne, cohérent et pleinement compatible avec les attentes d'un poste d'analyste-développeur.
+
+📌 Une dernière recommandation avant de poursuivre
+
+Je pense que nous pouvons améliorer encore notre approche.
+
+Au lieu de créer le projet Spring Boot directement sur le site de Spring Initializr, je te propose que le prochain chapitre soit consacré à la préparation professionnelle du dépôt Git :
+
+création d'un dépôt GitHub propre ;
+configuration SSH entre Ubuntu et GitHub (pour éviter les mots de passe) ;
+création d'un .gitignore adapté à Java, Angular et VS Code ;
+création d'un .editorconfig ;
+création d'un .gitattributes ;
+premier push sur GitHub ;
+puis seulement la génération du projet Spring Boot dans backend/.
+
+C'est ainsi que beaucoup d'équipes professionnelles démarrent un nouveau projet, et cela nous donnera un dépôt propre dès le premier commit.
