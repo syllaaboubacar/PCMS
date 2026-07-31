@@ -1,3 +1,21 @@
+server:
+  port: 8080
+
 spring:
-  application:
-    name: pcms-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pcms
+    username: pcms_app
+    password: PcmsDev2026!
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    show-sql: true
+
+    open-in-view: false
+
+    properties:
+      hibernate:
+        format_sql: true
