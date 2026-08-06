@@ -481,3 +481,106 @@ comment intégrer Flyway à Spring Boot ;
 comment préparer un pipeline CI/CD où chaque déploiement met automatiquement la base à jour.
 
 À partir de là, nous entrerons progressivement dans la phase de développement du backend.
+
+Structure du projet PCMS
+
+src/
+└── main/
+    └── java/
+        └── lu/
+            └── police/
+                └── pcms/
+                    ├── common/
+                    │   ├── config/
+                    │   ├── exception/
+                    │   ├── security/
+                    │   ├── util/
+                    │   └── entity/
+                    │		├── BaseCreatedEntity.java
+                    │		└── BaseEntity.java
+                    │
+                    ├── role/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── Role.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── department/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── Department.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── user/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── User.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── casefile/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── CaseFile.java
+                    │   ├── enums/
+                    │	│	├── CasePriority.java
+                    │	│	└── CaseStatus.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── caseassignment/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── CaseAssignment.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── suspect/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── Suspect.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── attachment/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── Attachment.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    ├── casecomment/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── Casecomment.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    │── audit/
+                    │   ├── controller/
+                    │   ├── dto/
+                    │   ├── entity/
+                    │	│	└── AuditLog.java
+                    │   ├── repository/
+                    │   ├── validation/
+                    │   └── service/
+                    │
+                    └── PcmsBackendApplication.java

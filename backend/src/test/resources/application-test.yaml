@@ -1,0 +1,28 @@
+spring:
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/pcms_test
+    username: pcms_app
+    password: PcmsDev2026!
+
+  jpa:
+
+    hibernate:
+      ddl-auto: validate
+
+    show-sql: false
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    org.flywaydb: INFO
