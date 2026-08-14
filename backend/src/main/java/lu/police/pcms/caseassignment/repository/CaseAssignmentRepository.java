@@ -158,4 +158,17 @@ public interface CaseAssignmentRepository
      */
     long countByUser(User user);
 
+
+
+    /**
+     * Retourne toutes les affectations non supprimées logiquement.
+     */
+    List<CaseAssignment> findByDeletedFalse();
+
+
+    /**
+     * Vérifie si une affectation active existe pour un dossier et un utilisateur.
+     */
+    boolean existsByCaseFileAndUserAndActiveTrue(CaseFile caseFile, User user);
+
 }

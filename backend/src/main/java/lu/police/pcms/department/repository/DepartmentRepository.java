@@ -3,6 +3,7 @@ package lu.police.pcms.department.repository;
 import lu.police.pcms.department.entity.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -121,5 +122,10 @@ public interface DepartmentRepository
      * Optional<Department> findByCode(String code);
      *
      */
+
+    /**
+     * Retourne tous les départements non supprimés logiquement.
+     */
+    List<Department> findByDeletedFalse();
 
 }

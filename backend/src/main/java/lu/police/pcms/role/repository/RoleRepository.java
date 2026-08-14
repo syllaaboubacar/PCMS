@@ -3,6 +3,7 @@ package lu.police.pcms.role.repository;
 import lu.police.pcms.role.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -86,5 +87,11 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
      * - la suppression logique des rôles
      *   (si elle devient nécessaire).
      */
+
+    /**
+     * Retourne tous les rôles non supprimés logiquement.
+     * Utilisé pour n'exposer que les rôles actifs.
+     */
+    List<Role> findByDeletedFalse();
 
 }

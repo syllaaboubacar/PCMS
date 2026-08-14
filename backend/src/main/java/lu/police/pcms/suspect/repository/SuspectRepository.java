@@ -142,4 +142,10 @@ public interface SuspectRepository extends JpaRepository<Suspect, Long> {
      */
     long countByCaseFileId(Long caseId);
 
+
+    /**
+     * Retourne tous les suspects non supprimés logiquement.
+     */
+    List<Suspect> findByDeletedFalse();
+
 }

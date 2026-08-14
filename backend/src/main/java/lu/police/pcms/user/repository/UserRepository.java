@@ -197,4 +197,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
      *
      */
 
+    /**
+     * Retourne tous les utilisateurs non supprimés logiquement.
+     * Utilisé pour n'exposer que les utilsateurs actifs.
+     */
+    List<User> findByDeletedFalse();
+
 }

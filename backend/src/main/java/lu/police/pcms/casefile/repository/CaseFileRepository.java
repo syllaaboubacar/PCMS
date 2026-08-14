@@ -233,4 +233,9 @@ public interface CaseFileRepository extends JpaRepository<CaseFile, Long> {
      *
      */
 
+    /**
+     * Retourne tous les dossiers non supprimés logiquement.
+     */
+    List<CaseFile> findByDeletedFalse();
+
 }
