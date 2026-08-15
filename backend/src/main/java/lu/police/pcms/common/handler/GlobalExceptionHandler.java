@@ -10,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -158,4 +160,57 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    /**
+     * Gère les paramètres de requête manquants.
+     *
+     * @param ex      L'exception
+     * @param request La requête HTTP
+     * @return Une réponse 400 Bad Request
+     */
+     @ExceptionHandler(MissingServletRequestParameterException.class)
+     public ResponseEntity<ErrorResponse> handleMissingParam(
+                MissingServletRequestParameterException ex,
+                HttpServletRequest request) {
+
+        log.warn("Paramètre manquant : {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .status(400)
+                .error("Bad Request")
+                .message("Le paramètre '" + ex.getParameterName() + "' est obligatoire")
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+
+        /**
+         * Gère les types de paramètres invalides (ex: "not-a-date" pour un Instant).
+         *
+         * @param ex      L'exception
+         * @param request La requête HTTP
+         * @return Une réponse 400 Bad Request
+         */
+     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+     public ResponseEntity<ErrorResponse> handleTypeMismatch(
+             MethodArgumentTypeMismatchException ex,
+             HttpServletRequest request) {
+
+        log.warn("Type de paramètre invalide : {}", ex.getMessage());
+
+        String requiredType = ex.getRequiredType() != null
+             ? ex.getRequiredType().getSimpleName()
+             : "inconnu";
+
+        ErrorResponse error = ErrorResponse.builder()
+             .status(400)
+             .error("Bad Request")
+             .message("La valeur '" + ex.getValue() + "' n'est pas un " + requiredType + " valide")
+             .path(request.getRequestURI())
+             .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+     }
+
 }

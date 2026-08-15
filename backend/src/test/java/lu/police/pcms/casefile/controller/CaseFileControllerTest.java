@@ -1,6 +1,7 @@
 package lu.police.pcms.casefile.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lu.police.pcms.casefile.dto.CaseFileResponse;
 import lu.police.pcms.casefile.dto.CreateCaseFileRequest;
@@ -12,7 +13,6 @@ import lu.police.pcms.casefile.service.CaseFileService;
 import lu.police.pcms.common.exception.DuplicateResourceException;
 import lu.police.pcms.common.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,8 @@ class CaseFileControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    //@Autowired
+    //private ObjectMapper objectMapper;
     private ObjectMapper objectMapper;
 
     @MockitoBean
@@ -130,6 +131,11 @@ class CaseFileControllerTest {
     @BeforeEach
     void setUp() {
 
+
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         createRequest = new CreateCaseFileRequest(
                 CASE_NUMBER,
                 TITLE,
@@ -192,17 +198,7 @@ class CaseFileControllerTest {
     @DisplayName("POST /api/cases - Création d'un dossier")
     class CreateCaseFileTests {
 
-        /*
-         * ========================================================
-         * TEST 1 - TEMPORAIREMENT DÉSACTIVÉ
-         * ========================================================
-         *
-         * Cause actuelle :
-         * ObjectMapper / JavaTimeModule
-         *
-         * Nous le réactiverons dans l'étape suivante.
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+                
         @Test
         @DisplayName("✅ Création réussie → 201 Created")
         void shouldCreateCaseFileSuccessfully() throws Exception {
@@ -255,10 +251,7 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 2 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("❌ Numéro de dossier déjà existant → 409 Conflict")
         void shouldReturn409WhenCaseNumberAlreadyExists()
@@ -302,10 +295,7 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 3 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("❌ Validation échouée (caseNumber vide) → 400 Bad Request")
         void shouldReturn400WhenCaseNumberIsBlank()
@@ -351,10 +341,7 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 4 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("❌ Validation échouée (caseNumber sans préfixe PCMS_) → 400 Bad Request")
         void shouldReturn400WhenCaseNumberInvalidFormat()
@@ -394,10 +381,7 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 5 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("❌ Validation échouée (status null) → 400 Bad Request")
         void shouldReturn400WhenStatusIsNull()
@@ -435,10 +419,7 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 6 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("❌ Validation échouée (openedAt null) → 400 Bad Request")
         void shouldReturn400WhenOpenedAtIsNull()
@@ -671,10 +652,7 @@ class CaseFileControllerTest {
     @DisplayName("PUT /api/cases/{id} - Mise à jour complète")
     class UpdateCaseFileTests {
 
-        /*
-         * TEST 7 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
+        
         @Test
         @DisplayName("✅ Mise à jour réussie → 200 OK")
         void shouldUpdateCaseFileSuccessfully()
@@ -745,10 +723,6 @@ class CaseFileControllerTest {
         }
 
 
-        /*
-         * TEST 8 - TEMPORAIREMENT DÉSACTIVÉ
-         */
-        @Disabled("Étape progressive : test réactivé ultérieurement")
         @Test
         @DisplayName("❌ Dossier inexistant → 404 Not Found")
         void shouldReturn404WhenUpdatingNonExistentCaseFile()
@@ -1016,5 +990,6 @@ class CaseFileControllerTest {
             return () -> Optional.of("test"); 
         }
 
+        
     }
 }
