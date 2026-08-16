@@ -1,5 +1,11 @@
 package lu.police.pcms.role.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +58,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
+@Tag(name = "Rôles", description = "Gestion des rôles utilisateur (CRUD complet)")
 public class RoleController {
 
     private final RoleService roleService;
@@ -65,12 +72,29 @@ public class RoleController {
      *
      * @param request DTO contenant les informations du rôle à créer
      * @return Réponse HTTP 201 Created avec le rôle créé
-     * @see CreateRoleRequest
-     * @see RoleResponse
-     * @see lu.police.pcms.common.exception.DuplicateResourceException Si un rôle avec le même nom existe déjà
      */
+    @Operation(
+            summary = "Créer un nouveau rôle",
+            description = """
+                    Crée un rôle avec un nom unique au format 'ROLE_XXX'.
+                    
+                    **Contraintes :**
+                    - Le nom doit commencer par 'ROLE_'
+                    - Le nom doit être en majuscules
+                    - Longueur : entre 6 et 50 caractères
+                    - Le nom doit être unique dans le système
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Rôle créé avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide (validation échouée)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un rôle avec ce nom existe déjà")
+    })
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(
+            @Parameter(description = "Données du rôle à créer", required = true)
             @Valid @RequestBody CreateRoleRequest request) {
 
         log.info("Requête de création d'un nouveau rôle : {}", request.getName());
@@ -90,8 +114,16 @@ public class RoleController {
      * Récupère la liste de tous les rôles non supprimés.
      *
      * @return Réponse HTTP 200 OK avec la liste des rôles
-     * @see RoleResponse
      */
+    @Operation(
+            summary = "Récupérer tous les rôles",
+            description = "Retourne la liste de tous les rôles non supprimés (filtre automatique sur deleted=false)."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Liste récupérée avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
 
@@ -113,11 +145,20 @@ public class RoleController {
      *
      * @param id Identifiant du rôle
      * @return Réponse HTTP 200 OK avec le rôle demandé
-     * @throws lu.police.pcms.common.exception.ResourceNotFoundException Si le rôle n'existe pas ou est supprimé
-     * @see RoleResponse
      */
+    @Operation(
+            summary = "Récupérer un rôle par son ID",
+            description = "Retourne les détails d'un rôle à partir de son identifiant technique."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Rôle trouvé",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Rôle introuvable ou supprimé")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> getRoleById(
+            @Parameter(description = "Identifiant technique du rôle", required = true, example = "1")
             @PathVariable Long id) {
 
         log.debug("Requête de récupération du rôle ID : {}", id);
@@ -139,14 +180,28 @@ public class RoleController {
      * @param id      Identifiant du rôle
      * @param request DTO contenant les nouvelles informations du rôle
      * @return Réponse HTTP 200 OK avec le rôle mis à jour
-     * @throws lu.police.pcms.common.exception.ResourceNotFoundException   Si le rôle n'existe pas ou est supprimé
-     * @throws lu.police.pcms.common.exception.DuplicateResourceException  Si le nouveau nom est déjà utilisé
-     * @see UpdateRoleRequest
-     * @see RoleResponse
      */
+    @Operation(
+            summary = "Remplacer complètement un rôle (PUT)",
+            description = """
+                    Remplace toutes les données d'un rôle existant.
+                    
+                    ⚠️ Tous les champs sont obligatoires.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Rôle mis à jour avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide (validation échouée)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Rôle introuvable ou supprimé"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un autre rôle utilise déjà ce nom")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
+            @Parameter(description = "Identifiant du rôle à modifier", required = true, example = "1")
             @PathVariable Long id,
+            @Parameter(description = "Nouvelles données du rôle (tous les champs)", required = true)
             @Valid @RequestBody UpdateRoleRequest request) {
 
         log.info("Requête de mise à jour complète du rôle ID : {}", id);
@@ -168,14 +223,28 @@ public class RoleController {
      * @param id      Identifiant du rôle
      * @param request DTO contenant les champs à modifier (optionnels)
      * @return Réponse HTTP 200 OK avec le rôle mis à jour
-     * @throws lu.police.pcms.common.exception.ResourceNotFoundException   Si le rôle n'existe pas ou est supprimé
-     * @throws lu.police.pcms.common.exception.DuplicateResourceException  Si le nouveau nom est déjà utilisé
-     * @see PatchRoleRequest
-     * @see RoleResponse
      */
+    @Operation(
+            summary = "Modifier partiellement un rôle (PATCH)",
+            description = """
+                    Modifie un ou plusieurs champs d'un rôle existant.
+                    
+                    ⚠️ Tous les champs sont optionnels. Seuls les champs fournis seront mis à jour.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Rôle partiellement mis à jour",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Rôle introuvable ou supprimé"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un autre rôle utilise déjà ce nom")
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> patchRole(
+            @Parameter(description = "Identifiant du rôle à modifier", required = true, example = "1")
             @PathVariable Long id,
+            @Parameter(description = "Champs à modifier (optionnels)", required = true)
             @Valid @RequestBody PatchRoleRequest request) {
 
         log.info("Requête de mise à jour partielle du rôle ID : {}", id);
@@ -196,17 +265,28 @@ public class RoleController {
      *
      * @param id Identifiant du rôle
      * @return Réponse HTTP 204 No Content
-     * @throws lu.police.pcms.common.exception.ResourceNotFoundException Si le rôle n'existe pas
      */
+    @Operation(
+            summary = "Supprimer logiquement un rôle",
+            description = """
+                    Marque un rôle comme supprimé (deleted = true).
+                    
+                    ⚠️ Le rôle reste en base de données mais n'est plus accessible via les requêtes GET.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Rôle supprimé avec succès (aucun contenu retourné)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Rôle introuvable")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRole(
+            @Parameter(description = "Identifiant du rôle à supprimer", required = true, example = "1")
             @PathVariable Long id) {
 
         log.info("Requête de suppression logique du rôle ID : {}", id);
 
         roleService.deleteRole(id);
 
-        // 204 No Content : succès mais pas de contenu à renvoyer
         return ResponseEntity.noContent().build();
     }
 }

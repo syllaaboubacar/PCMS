@@ -1,5 +1,11 @@
 package lu.police.pcms.suspect.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +61,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/suspects")
 @RequiredArgsConstructor
+@Tag(name = "Suspects", description = "Gestion des suspects (CRUD complet)")
 public class SuspectController {
 
     private final SuspectService suspectService;
@@ -71,8 +78,28 @@ public class SuspectController {
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException  Si le dossier n'existe pas
      * @throws lu.police.pcms.common.exception.DuplicateResourceException Si un suspect avec le même nom/prénom existe déjà dans le dossier
      */
+    @Operation(
+            summary = "Créer un nouveau suspect",
+            description = """
+                    Ajoute un suspect à un dossier d'enquête.
+                    
+                    **Contraintes :**
+                    - Le couple (dossier, nom, prénom) doit être unique.
+                    - Le nom et le prénom sont obligatoires.
+                    - La date de naissance, la nationalité et les notes sont optionnelles.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Suspect créé avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide (validation échouée)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Dossier introuvable"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un suspect avec ce nom/prénom existe déjà dans ce dossier")
+    })
     @PostMapping
     public ResponseEntity<ApiResponse<SuspectResponse>> createSuspect(
+            @Parameter(description = "Données du suspect à créer", required = true)
             @Valid @RequestBody CreateSuspectRequest request) {
 
         log.info("Requête de création d'un suspect : {} {}, dossier {}",
@@ -94,6 +121,15 @@ public class SuspectController {
      *
      * @return Réponse HTTP 200 OK avec la liste des suspects
      */
+    @Operation(
+            summary = "Récupérer tous les suspects",
+            description = "Retourne la liste de tous les suspects non supprimés (filtre automatique sur deleted=false)."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Liste récupérée avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<SuspectResponse>>> getAllSuspects() {
 
@@ -117,8 +153,19 @@ public class SuspectController {
      * @return Réponse HTTP 200 OK avec la liste des suspects du dossier
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException Si le dossier n'existe pas
      */
+    @Operation(
+            summary = "Récupérer les suspects d'un dossier",
+            description = "Retourne la liste de tous les suspects associés à un dossier donné."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Suspects du dossier récupérés avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Dossier introuvable")
+    })
     @GetMapping("/case/{caseFileId}")
     public ResponseEntity<ApiResponse<List<SuspectResponse>>> getSuspectsByCaseFile(
+            @Parameter(description = "Identifiant du dossier", required = true, example = "1")
             @PathVariable Long caseFileId) {
 
         log.debug("Requête de récupération des suspects du dossier : {}", caseFileId);
@@ -141,8 +188,19 @@ public class SuspectController {
      * @return Réponse HTTP 200 OK avec le suspect demandé
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException Si le suspect n'existe pas ou est supprimé
      */
+    @Operation(
+            summary = "Récupérer un suspect par son ID",
+            description = "Retourne les détails d'un suspect à partir de son identifiant technique."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Suspect trouvé",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Suspect introuvable ou supprimé")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SuspectResponse>> getSuspectById(
+            @Parameter(description = "Identifiant technique du suspect", required = true, example = "1")
             @PathVariable Long id) {
 
         log.debug("Requête de récupération du suspect ID : {}", id);
@@ -171,9 +229,28 @@ public class SuspectController {
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException  Si le suspect n'existe pas ou est supprimé
      * @throws lu.police.pcms.common.exception.DuplicateResourceException Si les nouvelles valeurs violent la contrainte d'unicité
      */
+    @Operation(
+            summary = "Remplacer complètement un suspect (PUT)",
+            description = """
+                    Remplace toutes les données d'un suspect existant.
+                    
+                    ⚠️ Le dossier d'origine ne peut pas être modifié.
+                    Tous les champs sont obligatoires.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Suspect mis à jour avec succès",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide (validation échouée)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Suspect introuvable ou supprimé"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un autre suspect avec ce nom/prénom existe déjà dans ce dossier")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SuspectResponse>> updateSuspect(
+            @Parameter(description = "Identifiant du suspect à modifier", required = true, example = "1")
             @PathVariable Long id,
+            @Parameter(description = "Nouvelles données du suspect (tous les champs sauf caseFileId)", required = true)
             @Valid @RequestBody UpdateSuspectRequest request) {
 
         log.info("Requête de mise à jour complète du suspect ID : {}", id);
@@ -203,9 +280,28 @@ public class SuspectController {
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException  Si le suspect n'existe pas ou est supprimé
      * @throws lu.police.pcms.common.exception.DuplicateResourceException Si les nouvelles valeurs violent la contrainte d'unicité
      */
+    @Operation(
+            summary = "Modifier partiellement un suspect (PATCH)",
+            description = """
+                    Modifie un ou plusieurs champs d'un suspect existant.
+                    
+                    ⚠️ Tous les champs sont optionnels. Seuls les champs fournis seront mis à jour.
+                    Le dossier d'origine ne peut pas être modifié.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Suspect partiellement mis à jour",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Requête invalide"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Suspect introuvable ou supprimé"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Un autre suspect avec ce nom/prénom existe déjà dans ce dossier")
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<SuspectResponse>> patchSuspect(
+            @Parameter(description = "Identifiant du suspect à modifier", required = true, example = "1")
             @PathVariable Long id,
+            @Parameter(description = "Champs à modifier (optionnels)", required = true)
             @Valid @RequestBody PatchSuspectRequest request) {
 
         log.info("Requête de mise à jour partielle du suspect ID : {}", id);
@@ -228,8 +324,21 @@ public class SuspectController {
      * @return Réponse HTTP 204 No Content
      * @throws lu.police.pcms.common.exception.ResourceNotFoundException Si le suspect n'existe pas
      */
+    @Operation(
+            summary = "Supprimer logiquement un suspect",
+            description = """
+                    Marque un suspect comme supprimé (deleted = true).
+                    
+                    ⚠️ Le suspect reste en base de données mais n'est plus accessible via les requêtes GET.
+                    """
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Suspect supprimé avec succès (aucun contenu retourné)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Suspect introuvable")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSuspect(
+            @Parameter(description = "Identifiant du suspect à supprimer", required = true, example = "1")
             @PathVariable Long id) {
 
         log.info("Requête de suppression logique du suspect ID : {}", id);

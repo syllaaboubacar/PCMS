@@ -19,3 +19,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  
+  springdoc:
+    api-docs:
+      path: /v3/api-docs           # Chemin de la spécification JSON
+      enabled: true
+      
+    swagger-ui:
+      path: /swagger-ui.html       # Chemin de l'interface web
+      enabled: true
+      operations-sorter: method    # Trie les endpoints par méthode HTTP (GET, POST, etc.)
+      tags-sorter: alpha           # Trie les tags par ordre alphabétique
+      try-it-out-enabled: true     # Active le bouton "Try it out"
+      display-request-duration: true
+      # Personnalisation du titre de la page
+      # title: PCMS API Documentation
